@@ -1,0 +1,16 @@
+openai
+openai-agents
+playwright
+requests
+aiohttp
+pillow
+beautifulsoup4
+python-dotenv
+pydantic
+pytest
+pytest-asyncio
+black
+flake8
+mypy
+types-requests
+google-search-results
