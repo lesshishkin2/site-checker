@@ -108,67 +108,77 @@ def setup_environment() -> None:
         print("   Создайте файл .env с вашим ключом OpenAI для полной функциональности")
 
 
-def main():
+def main() -> None:
     """Главная функция"""
     parser = argparse.ArgumentParser(
         description="Site Checker - AI агент для проверки фишинговых сайтов",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Примеры использования:
-  python main.py https://example.com
-  python main.py --url https://suspicious-site.com --verbose
-  python main.py https://paypal-security.fake --verbose
+  python main.py                          # анализ rora.it.com (verbose по умолчанию)
+  python main.py https://example.com      # анализ указанного сайта
+  python main.py --url https://site.com   # альтернативный способ
+  python main.py site.com --no-verbose    # отключить подробный вывод
         """
     )
-    
+
+    # Позиционный аргумент — URL; по умолчанию rora.it.com
     parser.add_argument(
-        "url", 
+        "url",
         nargs="?",
-        help="URL сайта для анализа"
+        default="rora.it.com",
+        help="URL сайта для анализа (позиционный, по умолчанию rora.it.com)",
     )
-    
+
+    # Альтернативный именованный аргумент для URL
     parser.add_argument(
         "--url",
-        help="URL сайта для анализа (альтернативный способ)"
+        dest="url_opt",
+        help="URL сайта для анализа (альтернативный способ передачи)",
     )
-    
+
+    # Verbose включён по умолчанию; при необходимости можно отключить
     parser.add_argument(
         "-v", "--verbose",
         action="store_true",
-        help="Подробный вывод"
+        default=True,
+        help="Подробный вывод (по умолчанию включён)",
     )
-    
+    parser.add_argument(
+        "--no-verbose",
+        dest="verbose",
+        action="store_false",
+        help="Отключить подробный вывод",
+    )
+
     parser.add_argument(
         "--json",
-        action="store_true", 
-        help="Вывод в формате JSON"
+        action="store_true",
+        help="Вывод в формате JSON",
     )
-    
+
     args = parser.parse_args()
-    
-    # Определяем URL
-    url = args.url or getattr(args, 'url', None)
-    if not url:
-        parser.print_help()
-        sys.exit(1)
-    
-    # Проверяем формат URL
+
+    # Определяем окончательный URL (именованный аргумент имеет приоритет)
+    url: str = args.url_opt or args.url
+
+    # Приводим URL к корректному виду
     if not (url.startswith("http://") or url.startswith("https://")):
         url = "https://" + url
-    
+
     # Настройка окружения
     setup_environment()
-    
+
     # Запуск анализа
     try:
         if args.verbose:
             print("🚀 Site Checker - AI Phishing Detection")
             print("=" * 50)
-        
+
         asyncio.run(analyze_site(url, args.verbose))
-        
+
     except KeyboardInterrupt:
-        print("\\n❌ Анализ прерван пользователем")
+        print("\n❌ Анализ прерван пользователем")
         sys.exit(1)
 
 
