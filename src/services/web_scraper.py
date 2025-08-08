@@ -78,15 +78,28 @@ class WebScraper:
             response = await page.goto(url, timeout=self.timeout * 1000)
             
             # Ждем загрузки контента
-            await page.wait_for_load_state("networkidle", timeout=10000)
+            try:
+                await page.wait_for_load_state("networkidle", timeout=10000)
+            except Exception:
+                # Если networkidle не работает, ждём domcontentloaded
+                await page.wait_for_load_state("domcontentloaded", timeout=5000)
             
             # Получаем основную информацию
             title = await page.title()
             html_content = await page.content()
-            text_content = await page.inner_text("body")
+            
+            try:
+                text_content = await page.inner_text("body")
+            except Exception:
+                # Если body не найден, пытаемся получить весь текст
+                text_content = await page.inner_text("html") if await page.query_selector("html") else ""
             
             # Мета-теги
-            meta_description = await page.get_attribute('meta[name="description"]', "content")
+            meta_description = None
+            meta_desc_elem = await page.query_selector('meta[name="description"]')
+            if meta_desc_elem:
+                meta_description = await meta_desc_elem.get_attribute("content")
+            
             meta_keywords_elem = await page.query_selector('meta[name="keywords"]')
             meta_keywords = []
             if meta_keywords_elem:

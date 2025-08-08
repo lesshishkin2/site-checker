@@ -126,7 +126,7 @@ def main() -> None:
     parser.add_argument(
         "url",
         nargs="?",
-        default="rora.it.com",
+        default="get.it.com",
         help="URL сайта для анализа (позиционный, по умолчанию rora.it.com)",
     )
 
